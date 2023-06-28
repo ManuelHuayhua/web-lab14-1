@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Carga de archivos</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+      }
+      h1 {
+        text-align: center;
+      }
+      .form-container {
+        max-width: 400px;
+        margin: 0 auto;
+        text-align: center;
+      }
+      .file-info {
+        margin-top: 20px;
+        text-align: left;
+      }
+      .error-message {
+        color: red;
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Carga de archivos</h1>
+    <div class="form-container">
+      <form id="upload-form" action="/upload" method="POST" enctype="multipart/form-data">
+        <input type="file" id="file-input" name="files" multiple /> <!-- Añadir el atributo 'multiple' -->
+        <button type="submit" id="upload-button">Cargar</button>
+      </form>
+    </div>
+
+    <div id="file-info" class="file-info"></div>
+    <div id="error-message" class="error-message"></div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('upload-form');
+  const fileInput = document.getElementById('file-input');
+  const fileInfoDiv = document.getElementById('file-info');
+  const errorMessageDiv = document.getElementById('error-message');
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    const files = fileInput.files;
+
+    if (files.length === 0) {
+      errorMessageDiv.textContent = 'Por favor, selecciona al menos un archivo.';
+      fileInfoDiv.textContent = '';
+      return;
+    }
+
+    const formData = new FormData(form);
+    const response = await fetch('/upload', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (response.ok) {
+      const fileInfos = await response.json();
+      showFileInfos(fileInfos);
+      errorMessageDiv.textContent = '';
+    } else {
+      const errorMessage = await response.text();
+      fileInfoDiv.textContent = '';
+      errorMessageDiv.textContent = errorMessage;
+    }
+  });
+
+  function showFileInfos(fileInfos) {
+    fileInfoDiv.innerHTML = '';
+    for (const fileInfo of fileInfos) {
+      const fileDiv = document.createElement('div');
+      fileDiv.innerHTML = `
+        <p><strong>Nombre:</strong> ${fileInfo.filename}</p>
+        <p><strong>Nombre original:</strong> ${fileInfo.originalname}</p>
+        <p><strong>Tamaño:</strong> ${fileInfo.size} bytes</p>
+        <p><strong>Tipo MIME:</strong> ${fileInfo.mimetype}</p>
+        <hr>
+      `;
+      fileInfoDiv.appendChild(fileDiv);
+    }
+  }
+});
+    </script>
+
